@@ -1,18 +1,18 @@
 "use strict"
 const exec = require('child-process-promise').exec
 const MAX_BUFFER_SIZE = 2000 * 1024;
-const applescript = require("applescript")
+const applescript = require('applescript')
 const macNetworkDrive = {
 
   list: function list() {
 
-    let fetchDisks = exec("/bin/df", {
+    let fetchDisks = exec('/bin/df', {
       maxBuffer: MAX_BUFFER_SIZE
     });
 
     let completePromise = new Promise((resolve, reject) => {
       fetchDisks.then(result => {
-        if (typeof result.stderr === "string" && result.stderr.length !== 0) {
+        if (typeof result.stderr === 'string' && result.stderr.length !== 0) {
           reject(stderr)
         }
 
@@ -26,7 +26,7 @@ const macNetworkDrive = {
         for (let line of pathList) {
           let matches = line.match(re);
           if (matches) {
-            drivePath["\\\\" + matches[1].replace('/', '\\') + "\\"] = matches[2];
+            drivePath[matches[1].replace(/\\/g, '/')] = matches[2];
           }
         }
         resolve(drivePath)
@@ -42,8 +42,8 @@ const macNetworkDrive = {
   find: function find(drivePath) {
     let completePromise = new Promise((resolve, reject) => {
 
-      if ("string" !== typeof drivePath || 0 === drivePath.length) {
-        reject("Invalid path");
+      if ('string' !== typeof drivePath || 0 === drivePath.length) {
+        reject('Invalid path');
       }
 
       macNetworkDrive.list().then(networkDrives => {
@@ -51,9 +51,6 @@ const macNetworkDrive = {
           if (!networkDrives.hasOwnProperty(currentDrivePath)) {
             continue;
           }
-
-          if (drivePath.charAt(drivePath.length - 1) != "\\")
-            drivePath += "\\"
 
           if (currentDrivePath.toUpperCase() === drivePath.toUpperCase()) {
             resolve(networkDrives[currentDrivePath]);
@@ -69,21 +66,16 @@ const macNetworkDrive = {
   mount: function mount(drivePath, localPath = null, username = null, password = null) {
     /* parametetr localPath is unused -> allow to have the same signature */
     let completePromise = new Promise((resolve, reject) => {
-
-      let test = macNetworkDrive.find(drivePath).then(result => {
+      macNetworkDrive.find(drivePath).then(result => {
         if (result !== undefined) {
           resolve(result)
         } else {
-          let connectPath = ""
+          let connectPath = ''
           let serverPath = drivePath
 
           if (username != null && password != null) {
-            username = username.replace("\\", "\\\\")
             connectPath = `${username}:${password}@`
           }
-
-          serverPath = serverPath.replace("\\\\", "")
-          serverPath = serverPath.replace("\\", "/")
 
           let pathDrive = `smb://${connectPath}${serverPath}`
           let mountScript = `
@@ -98,7 +90,7 @@ const macNetworkDrive = {
           applescript.execString(mountScript, (err, result) => {
             if (err || result === undefined) {
               if (err === undefined)
-                reject("Unable to connect")
+                reject('Unable to connect')
 
               reject(err)
             }
