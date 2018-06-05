@@ -14,7 +14,6 @@
     "applescript": "^1.0.0",
     "child-process-promise": "^2.2.1"
   },
-  "os":["darwin"],
   "bugs":{ 
   	"url" : "https://github.com/Fllorent0D/MacNetworkDriveJS/issues", 
   	"email" : "f.cardoen@me.com"
